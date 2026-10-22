@@ -81,22 +81,28 @@ two Telegram accounts.
 
 ### 4. Suggested walkthrough (about five minutes)
 
-1. **Text task (developer).** Log in to the bot as `test2@hire.me`. Press **Add task** →
-   **Personal task**, then send a short title and details. Keep http://localhost:8080 open as
-   `test2@hire.me`: the card appears in **Pending** without refreshing.
-2. **Voice task.** Press **Add task** → **Personal task** and send a voice note (up to five
-   minutes, any language Whisper supports). The bot replies at once that it is transcribing,
-   then shows the text with **Cancel** / **Approve**. The task is created only after **Approve**.
-3. **Status change.** Press **My tasks**, open a task, and tap **In Progress** or
-   **Completed**. The dashboard card moves column live. Dragging the card on the dashboard
+1. **Text task (developer).** Log in to the bot as `test2@hire.me`. Press **＋ Add task** →
+   **Personal task**, send a short title, then send the details (or tap **⏩ Skip description**).
+   Pick a deadline in the calendar or tap **No deadline**; the task is saved at that point.
+   Keep http://localhost:8080 open as `test2@hire.me`: the card appears in **Pending** without
+   refreshing.
+2. **Voice task.** Send a voice note straight into the chat (up to five minutes, any language
+   Whisper supports). The bot replies at once that it is transcribing, then shows the text
+   with **Cancel** / **Approve**. The task is created only after **Approve**. Inside
+   **＋ Add task**, a voice note answers the current step instead (for example the title) and
+   the steps continue.
+3. **Status change.** Press **📋 My tasks**, open a task, and tap **🔄 In progress** or
+   **✅ Completed**. The dashboard card moves column live. Dragging the card on the dashboard
    updates the bot's view too.
-4. **Manager flow.** Log out and log in as `test1@hire.me`. Press **Projects** → **＋ New
-   project** and name it. Open the project → **Add person** → send `test2@hire.me`. Then
-   **＋ Add task**: send a title, choose `Test Two` as assignee, and pick a deadline in the
-   calendar.
+4. **Manager flow.** Press **🚪 Log out** → **Log out of Telegram only**, then log in as
+   `test1@hire.me`. Press **🗂 Projects** → **＋ New project** and send a name. In the project,
+   tap **Add person** and send `test2@hire.me`. Then tap **＋ Add task**: send a title, send
+   details or tap **⏩ Skip description**, choose **Test Two**, pick a day (for example
+   **Tomorrow**), and tap **✓ Save deadline**.
 5. **Developer receives it.** Log in as `test2@hire.me` (in Telegram or on the website). The
    assigned task appears under **My tasks** and **Due soon**. Change its status or add a
-   **💬 Comment**; the manager sees it live on the dashboard.
+   **💬 Comment**; the manager sees the change live on the project's board (choose the
+   project in the website sidebar).
 
 Useful commands after login: `/tasks`, `/newtask`, `/dashboard` (one-time website sign-in
 link), `/menu`, `/help`, `/logout`, `/cancel`.
@@ -117,10 +123,10 @@ link), `/menu`, `/help`, `/logout`, `/cancel`.
    Cards render in batches of 25 per column. Wide screens load more automatically while
    scrolling; on narrow screens (≤850px), where columns stack, each column has a **Load more**
    button so later columns stay reachable. Live updates never collapse an expanded column.
-7. Completed tasks show **Archive** for their manager, their assignee, or the owner of a personal task.
-   Archiving removes the task from the active board and Telegram lists while keeping its details
-   and comments. Use the archive icon beside search to view archived tasks and choose **Restore**
-   to return one to Completed.
+7. Completed tasks show **Archive** for their manager, their assignee, or the owner of a personal task;
+   confirm with **Yes**. Archiving removes the task from the active board and Telegram lists while
+   keeping its details and comments. Use the archive icon beside search to view archived tasks,
+   choose **Restore** to return one to Completed, and **Back to board** to leave the archive.
    Managers can choose **Delete** on their project cards, then **Delete task** to confirm. Everyone
    can delete their own personal cards. This works for Telegram
    text, voice, and dashboard tasks and removes the task from both views. **Keep task** cancels.
@@ -153,7 +159,7 @@ Existing tasks remain personal and are assigned to their current owners.
    See the project members and add the developer using **Add person**, with `test2@hire.me`.
    Managers can remove members here too; their tasks stay in the project and keep any other assignees.
    The project owner cannot be removed.
-3. Choose **Add task**, enter the task text, open **Assigned to**, check one or more people, and set a deadline.
+3. Choose **Add task**, enter a title and description, open **Assigned to**, check one or more people, and set a deadline.
    Assignees must already belong to the project. Clear the selection to leave a project task unassigned.
    Each selected person sees the shared task in My Tasks and can change its status.
 4. As the developer, open **My Tasks** or choose the assigned project in the sidebar.
@@ -164,7 +170,7 @@ Existing tasks remain personal and are assigned to their current owners.
 7. Open **Due soon** for incomplete tasks due within the next 96 hours, including overdue
    tasks. Developers see their own due tasks; managers see due tasks in their accessible workspace.
    A **View** selector provides the same project navigation on narrow screens.
-8. To archive a project, open **⋮** beside its name and choose **Archive project**.
+8. To archive a project, open **⋮** beside its name, choose **Archive project**, and confirm with **Yes**.
    Only the project manager or an admin can archive or restore it. Archived projects leave
    the active sidebar, My Tasks, Due soon, and Telegram task lists. Tasks, assignments,
    statuses, individual task archives, and comments are preserved; reminders pause.
@@ -210,9 +216,11 @@ Telegram supports the same workflow after login:
   cannot change a different task. Text dates remain an optional fallback (`YYYY-MM-DD`,
   `YYYYMMDD`, `YYYY-MM-DD HH:MM`, or `-`). A text date without a time uses 23:59. Deadlines
   must fall between 1970 and 2100 on every channel.
-- Spoken answers also work when choosing Personal task or a project, choosing an assignee by
-  name or email, and entering or changing a deadline. For example, say “test two at hire dot me,”
-  “tomorrow at six pm,” or “no deadline.” The background worker transcribes the answer and shows
+- Spoken answers also work when choosing Personal task or a project and when entering or
+  changing a deadline. For example, say “Personal task,” “tomorrow at six pm,” or “no deadline.”
+  For people, tap their button or type the email. Spoken names and emails must match exactly,
+  and speech recognition often changes them: `hire.me` tends to come back as “higher.me”, and
+  “Test Two” as “Test 2”. The background worker transcribes the answer and shows
   exactly **Cancel** and **Approve** before applying it. **Cancel** discards the transcript and
   lets you answer the same question again by voice or typing. Your other draft fields are kept.
   While reviewing a completed transcript, choose one of these buttons before sending an answer.
@@ -511,7 +519,9 @@ bash scripts/test.sh pytest -m transcription # real local Whisper queue test
 bash scripts/check-platforms.sh              # ARM64/AMD64 CPU image packaging checks
 ```
 
-For development with Python 3.12/uv and Node.js 22:
+For development with Python 3.12/uv and Node.js 20 or newer. The local `pytest` run uses the
+isolated test PostgreSQL/Redis that `bash scripts/test.sh` starts on `127.0.0.1:55432` and
+`127.0.0.1:56379`, so run that script once first; it leaves them running.
 
 ```bash
 cd backend

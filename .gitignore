@@ -15,3 +15,6 @@ test-results/
 
 # Assessment brief is marked "strict confidentiality"; keep it out of the repository.
 AI_Engineering_Intern_Technical_Task.pdf
+
+VERIFICATION.md
+output/

@@ -530,6 +530,5 @@ npm test
 Tests cover both accounts, incorrect passwords, throttling, origin checks, cross-account
 isolation, Telegram credential entry, password message removal, blocked commands/old buttons
 before login, account switching, login and logout popup, device-scoped logout, direct dashboard access, Kanban statuses,
-optimistic rollback, SSE/reconnect, voice failures, and worker recovery. See `VERIFICATION.md`
-for executed checks. Telegram transport is mocked in automated tests; live credentials are
-read only from the local `.env` file.
+optimistic rollback, SSE/reconnect, voice failures, and worker recovery. Telegram transport
+is mocked in automated tests; live credentials are read only from the local `.env` file.

@@ -1,0 +1,105 @@
+.voice-editor-shell {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+  background: #f7f4fc;
+  color: #393247;
+}
+.voice-editor-card {
+  width: min(100%, 650px);
+  padding: clamp(24px, 5vw, 44px);
+  background: #fff;
+  border: 1px solid #e6deef;
+  border-radius: 24px;
+  box-shadow: 0 16px 60px #3b255b0a;
+}
+.voice-editor-mark {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  background: #ede6fb;
+  color: #7955bd;
+  border-radius: 15px;
+  margin-bottom: 24px;
+}
+.voice-editor-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #8b7b9e;
+}
+.voice-editor-card h1 {
+  font-size: clamp(26px, 5vw, 34px);
+  letter-spacing: -0.04em;
+  margin: 10px 0;
+}
+.voice-editor-card p {
+  line-height: 1.6;
+}
+.voice-editor-card form {
+  margin-top: 28px;
+}
+.voice-editor-card label {
+  display: block;
+  text-transform: capitalize;
+  font-size: 13px;
+  font-weight: 650;
+  margin-bottom: 10px;
+}
+.voice-editor-card textarea {
+  width: 100%;
+  min-height: 220px;
+  resize: vertical;
+  box-sizing: border-box;
+  border: 1px solid #d9cfe7;
+  border-radius: 12px;
+  padding: 16px;
+  font: inherit;
+  line-height: 1.6;
+  color: inherit;
+  background: #fcfaff;
+}
+.voice-editor-card textarea:focus-visible {
+  outline: 3px solid #e8ddfa;
+  border-color: #9877c9;
+}
+.voice-editor-count {
+  text-align: right;
+  color: #94869e;
+  font-size: 11px;
+  margin: 7px 0 22px;
+}
+.voice-editor-card button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 15px 18px;
+  color: #fff;
+  background: #7955bd;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+.voice-editor-card button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.voice-editor-card .voice-editor-error {
+  color: #a73b57;
+  font-size: 13px;
+}
+@media (max-width: 480px) {
+  .voice-editor-shell {
+    padding: 16px 12px;
+  }
+  .voice-editor-card {
+    border-radius: 18px;
+    padding: 24px 20px;
+  }
+}

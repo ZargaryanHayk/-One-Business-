@@ -1,0 +1,160 @@
+name: ai-task-bot
+
+x-app: &app
+  image: taskbot-backend:local
+  build:
+    context: ./backend
+    target: base
+  env_file:
+    - path: .env
+      required: false
+  environment: &environment
+    DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-taskbot}:${POSTGRES_PASSWORD:-local-development-change-me}@postgres:5432/${POSTGRES_DB:-taskbot}
+    REDIS_URL: redis://redis:6379/0
+    TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+    APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8080}
+    COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    WHISPER_CACHE: /models
+    WHISPER_MODEL: ${WHISPER_MODEL:-small}
+    WHISPER_CPU_THREADS: ${WHISPER_CPU_THREADS:-4}
+    WHISPER_BEAM_SIZE: ${WHISPER_BEAM_SIZE:-1}
+    HF_HUB_DISABLE_XET: '1'
+    HF_HUB_DOWNLOAD_TIMEOUT: '120'
+    LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    APP_TIMEZONE: ${APP_TIMEZONE:-Asia/Yerevan}
+  restart: unless-stopped
+  init: true
+  depends_on: &dependencies
+    migrate:
+      condition: service_completed_successfully
+    redis:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-taskbot}
+      POSTGRES_USER: ${POSTGRES_USER:-taskbot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-development-change-me}
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.4-alpine
+    command: [redis-server, --appendonly, 'yes', --appendfsync, everysec]
+    volumes: [redis_data:/data]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    restart: unless-stopped
+
+  migrate:
+    <<: *app
+    command: [alembic, upgrade, head]
+    restart: 'no'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    <<: *app
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  bot:
+    <<: *app
+    # All transcription (including wizard titles and edits) runs in transcription-worker.
+    command: [python, -m, app.bot]
+    healthcheck:
+      test: [CMD, python, -c, "import redis; from app.config import settings; assert redis.Redis.from_url(settings().redis_url).exists('heartbeat:bot')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  model-download:
+    <<: *app
+    image: taskbot-transcription:local
+    build:
+      context: ./backend
+      target: transcription
+    command: [python, -c, 'from app.transcription import whisper_model; whisper_model()']
+    volumes: [model_cache:/models]
+    restart: 'no'
+
+  transcription-worker:
+    <<: *app
+    image: taskbot-transcription:local
+    build:
+      context: ./backend
+      target: transcription
+    command: [celery, -A, app.celery_app, worker, -Q, transcription, --concurrency=1, '--hostname=transcription@%h', --loglevel=INFO]
+    environment:
+      <<: *environment
+      WHISPER_PRELOAD: '1'
+    volumes: [model_cache:/models]
+    stop_grace_period: 11m
+    depends_on:
+      <<: *dependencies
+      model-download:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD-SHELL, 'celery -A app.celery_app inspect ping --destination "transcription@$$HOSTNAME" --timeout 5 | grep -q pong']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  notification-worker:
+    <<: *app
+    command: [celery, -A, app.celery_app, worker, -Q, notifications, --concurrency=2, '--hostname=notifications@%h', --loglevel=INFO]
+    healthcheck:
+      test: [CMD-SHELL, 'celery -A app.celery_app inspect ping --destination "notifications@$$HOSTNAME" --timeout 5 | grep -q pong']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  dispatcher:
+    <<: *app
+    command: [python, -m, app.dispatcher]
+    healthcheck:
+      test: [CMD, python, -c, "import redis; from app.config import settings; assert redis.Redis.from_url(settings().redis_url).exists('heartbeat:dispatcher')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build: ./frontend
+    ports: ['127.0.0.1:${APP_PORT:-8080}:8080']
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  test:
+    <<: *app
+    image: taskbot-tests:local
+    build:
+      context: ./backend
+      target: test
+    environment:
+      <<: *environment
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-taskbot}:${POSTGRES_PASSWORD:-local-development-change-me}@postgres:5432/taskbot_test
+      ALLOW_TEST_DATABASE_RESET: '1'
+    profiles: [test]
+    volumes: [model_cache:/models]
+    restart: 'no'
+
+volumes:
+  postgres_data:
+  redis_data:
+  model_cache:

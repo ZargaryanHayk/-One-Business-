@@ -1,0 +1,9 @@
+# Used only with the separate taskbot-tests Compose project (see scripts/test.sh).
+services:
+  postgres:
+    ports: ['127.0.0.1:55432:5432']
+  redis:
+    ports: ['127.0.0.1:56379:6379']
+  test:
+    environment:
+      REDIS_URL: redis://redis:6379/15

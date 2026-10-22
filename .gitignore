@@ -1,0 +1,17 @@
+.env
+.venv/
+.tools/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+*.tsbuildinfo
+node_modules/
+dist/
+playwright-report/
+test-results/
+.DS_Store
+
+# Assessment brief is marked "strict confidentiality"; keep it out of the repository.
+AI_Engineering_Intern_Technical_Task.pdf
